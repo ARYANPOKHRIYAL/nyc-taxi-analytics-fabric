@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "DataPipeline",
+    "displayName": "pl-stg_processing_nyctaxi"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "8f38c306-bb6c-85de-47bf-24fd0b8a844a"
+  }
+}

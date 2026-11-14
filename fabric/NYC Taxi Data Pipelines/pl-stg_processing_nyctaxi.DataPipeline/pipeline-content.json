@@ -1,0 +1,303 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "Copy",
+        "typeProperties": {
+          "source": {
+            "type": "ParquetSource",
+            "storeSettings": {
+              "type": "LakehouseReadSettings",
+              "recursive": true,
+              "enablePartitionDiscovery": false
+            },
+            "formatSettings": {
+              "type": "ParquetReadSettings"
+            },
+            "datasetSettings": {
+              "type": "Parquet",
+              "typeProperties": {
+                "location": {
+                  "type": "LakehouseLocation",
+                  "folderPath": "nyctaxi_yellow",
+                  "fileName": {
+                    "value": "@concat('yellow_tripdata_',variables('v_date'),'.parquet')",
+                    "type": "Expression"
+                  }
+                },
+                "compressionCodec": "snappy"
+              },
+              "schema": [],
+              "linkedService": {
+                "name": "NYCProjectLakehouse",
+                "properties": {
+                  "type": "Lakehouse",
+                  "typeProperties": {
+                    "artifactId": "a8b28454-ae25-9bef-4c08-10973f901a69",
+                    "workspaceId": "00000000-0000-0000-0000-000000000000",
+                    "rootFolder": "Files"
+                  },
+                  "annotations": []
+                }
+              },
+              "annotations": []
+            }
+          },
+          "sink": {
+            "type": "DataWarehouseSink",
+            "preCopyScript": "delete from stg.nyctaxi_yellow",
+            "allowCopyCommand": true,
+            "copyCommandSettings": {},
+            "writeBehavior": "Insert",
+            "disableMetricsCollection": false,
+            "datasetSettings": {
+              "type": "DataWarehouseTable",
+              "typeProperties": {
+                "schema": "stg",
+                "table": "nyctaxi_yellow"
+              },
+              "schema": [],
+              "linkedService": {
+                "name": "NYCProjectWarehouse",
+                "properties": {
+                  "type": "DataWarehouse",
+                  "typeProperties": {
+                    "artifactId": "83a7afb7-8251-98fb-44df-e825a8c2191d",
+                    "endpoint": "p7kycg7xgfxuba347quhwvh7vi-u7tjflwuqiqejihhbksgmto74y.datawarehouse.fabric.microsoft.com",
+                    "workspaceId": "00000000-0000-0000-0000-000000000000"
+                  },
+                  "annotations": []
+                }
+              },
+              "annotations": []
+            }
+          },
+          "translator": {
+            "type": "TabularTranslator",
+            "typeConversion": true,
+            "typeConversionSettings": {
+              "allowDataTruncation": true,
+              "treatBooleanAsNumber": false
+            }
+          },
+          "enableStaging": true
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Copy trip data to Staging",
+        "description": "Copying the initial staging data for the trip data and then dynamically upserting next month data using variables",
+        "dependsOn": [
+          {
+            "activity": "Setting startDate for Copy Data",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "SqlServerStoredProcedure",
+        "typeProperties": {
+          "storedProcedureName": "[stg].[data_cleaning_stg]",
+          "storedProcedureParameters": {
+            "end_date": {
+              "value": {
+                "value": "@variables('v_end_date')",
+                "type": "Expression"
+              },
+              "type": "DateTime"
+            },
+            "start_date": {
+              "value": {
+                "value": "@concat(variables('v_date'),'-01')",
+                "type": "Expression"
+              },
+              "type": "DateTime"
+            }
+          }
+        },
+        "linkedService": {
+          "name": "NYCProjectWarehouse",
+          "properties": {
+            "type": "DataWarehouse",
+            "typeProperties": {
+              "artifactId": "83a7afb7-8251-98fb-44df-e825a8c2191d",
+              "endpoint": "p7kycg7xgfxuba347quhwvh7vi-u7tjflwuqiqejihhbksgmto74y.datawarehouse.fabric.microsoft.com",
+              "workspaceId": "00000000-0000-0000-0000-000000000000"
+            },
+            "annotations": []
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "SP Remove Outliers",
+        "description": "Removing outlier rows where the rows doesn't relate to the month being processed",
+        "dependsOn": [
+          {
+            "activity": "Setting endDate for SP",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "SetVariable",
+        "typeProperties": {
+          "variableName": "v_end_date",
+          "value": {
+            "value": "@addToTime(concat(variables('v_date'),'-01'),1,'Month')",
+            "type": "Expression"
+          }
+        },
+        "policy": {
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Setting endDate for SP",
+        "dependsOn": [
+          {
+            "activity": "Copy trip data to Staging",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "SqlServerStoredProcedure",
+        "typeProperties": {
+          "storedProcedureName": "[metadata].[insert_staging_metadata]",
+          "storedProcedureParameters": {
+            "pipeline_run_id": {
+              "value": {
+                "value": "@pipeline().RunId",
+                "type": "Expression"
+              },
+              "type": "String"
+            },
+            "processed_date": {
+              "value": {
+                "value": "@pipeline().TriggerTime",
+                "type": "Expression"
+              },
+              "type": "DateTime"
+            },
+            "table_name": {
+              "value": "staging_nyctaxi_yellow",
+              "type": "String"
+            }
+          }
+        },
+        "linkedService": {
+          "name": "NYCProjectWarehouse",
+          "properties": {
+            "type": "DataWarehouse",
+            "typeProperties": {
+              "artifactId": "83a7afb7-8251-98fb-44df-e825a8c2191d",
+              "endpoint": "p7kycg7xgfxuba347quhwvh7vi-u7tjflwuqiqejihhbksgmto74y.datawarehouse.fabric.microsoft.com",
+              "workspaceId": "00000000-0000-0000-0000-000000000000"
+            },
+            "annotations": []
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "SP Loading Stg Metadata",
+        "description": "Loading the staging run metadata in the processing log table",
+        "dependsOn": [
+          {
+            "activity": "SP Remove Outliers",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Script",
+        "typeProperties": {
+          "scripts": [
+            {
+              "text": {
+                "value": "SELECT TOP 1\r\nlatest_processed_pickup\r\nFROM metadata.processing_log\r\nWHERE table_processed = 'staging_nyctaxi_yellow'\r\nORDER BY latest_processed_pickup DESC",
+                "type": "Expression"
+              },
+              "type": "Query"
+            }
+          ],
+          "scriptBlockExecutionTimeout": "02:00:00"
+        },
+        "linkedService": {
+          "name": "NYCProjectWarehouse",
+          "properties": {
+            "type": "DataWarehouse",
+            "typeProperties": {
+              "artifactId": "83a7afb7-8251-98fb-44df-e825a8c2191d",
+              "endpoint": "p7kycg7xgfxuba347quhwvh7vi-u7tjflwuqiqejihhbksgmto74y.datawarehouse.fabric.microsoft.com",
+              "workspaceId": "00000000-0000-0000-0000-000000000000"
+            },
+            "annotations": []
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Latest processed data",
+        "description": "Fetching the latest processed pickup date from the latest processed data in the processing log table",
+        "dependsOn": []
+      },
+      {
+        "type": "SetVariable",
+        "typeProperties": {
+          "variableName": "v_date",
+          "value": {
+            "value": "@formatDateTime(\n    addToTime(\n        activity('Latest processed data').output.resultSets[0].rows[0].latest_processed_pickup,\n        1, 'month' ),\n    'yyyy-MM'\n)",
+            "type": "Expression"
+          }
+        },
+        "policy": {
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Setting startDate for Copy Data",
+        "dependsOn": [
+          {
+            "activity": "Latest processed data",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      }
+    ],
+    "variables": {
+      "v_date": {
+        "type": "String",
+        "defaultValue": "2024-01"
+      },
+      "v_end_date": {
+        "type": "String"
+      }
+    }
+  }
+}

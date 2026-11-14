@@ -1,0 +1,106 @@
+[
+  {
+    "uniqueIdentifier": "4d4fb01b-614c-4fd5-91e0-e0e69504fed6",
+    "payload": {
+      "name": "NYCProjectLakehouse",
+      "description": "Container Description",
+      "type": "rthSubscriptions"
+    },
+    "type": "container-v1"
+  },
+  {
+    "uniqueIdentifier": "9277cb19-830f-4266-82cb-df9434363943",
+    "payload": {
+      "name": "Fabric item action",
+      "fabricItem": {
+        "itemId": "47fdae61-1ab7-b01e-46b3-39f883903fe5",
+        "workspaceId": "00000000-0000-0000-0000-000000000000",
+        "itemType": "Pipeline"
+      },
+      "jobType": "Pipeline",
+      "parentContainer": {
+        "targetUniqueIdentifier": "4d4fb01b-614c-4fd5-91e0-e0e69504fed6"
+      }
+    },
+    "type": "fabricItemAction-v1"
+  },
+  {
+    "uniqueIdentifier": "a8c08554-cc28-4fbf-bc85-f63b297c0d61",
+    "payload": {
+      "name": "NYCTaxiDataProject event",
+      "connection": {
+        "scope": "Artifact",
+        "tenantId": "1b81d57f-31f7-406f-837c-fc287b54ffaa",
+        "workspaceId": "ae92e6a7-82d4-4420-a0e7-0aa4664ddfe6",
+        "artifactId": "3f901a69-1097-4c08-9bef-ae25a8b28454",
+        "eventGroupType": "Microsoft.Fabric.OneLakeEvents"
+      },
+      "filterSettings": {
+        "eventTypes": [
+          {
+            "name": "Microsoft.Fabric.OneLake.FileCreated"
+          }
+        ],
+        "filters": [
+          {
+            "values": [
+              "/Files/nyctaxi_yellow"
+            ],
+            "operatorType": "StringContains",
+            "key": "subject"
+          },
+          {
+            "values": [
+              ".parquet"
+            ],
+            "operatorType": "StringContains",
+            "key": "subject"
+          },
+          {
+            "values": [
+              "/Files/nyctaxi_yellow"
+            ],
+            "operatorType": "StringBeginsWith",
+            "key": "subject"
+          }
+        ]
+      },
+      "parentContainer": {
+        "targetUniqueIdentifier": "4d4fb01b-614c-4fd5-91e0-e0e69504fed6"
+      }
+    },
+    "type": "realTimeHubSource-v1"
+  },
+  {
+    "uniqueIdentifier": "820df4b5-7a50-4f5b-9d78-a7a3ed79fcb7",
+    "payload": {
+      "name": "NYCTaxiDataProject event",
+      "parentContainer": {
+        "targetUniqueIdentifier": "4d4fb01b-614c-4fd5-91e0-e0e69504fed6"
+      },
+      "definition": {
+        "type": "Event",
+        "instance": "{\"steps\":[{\"id\":\"a2cea4b2-2be0-4355-aa2d-502acdcac528\",\"name\":\"SourceEventStep\",\"rows\":[{\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"a8c08554-cc28-4fbf-bc85-f63b297c0d61\"}],\"kind\":\"SourceReference\",\"name\":\"SourceSelector\"}]}],\"templateId\":\"SourceEvent\",\"templateVersion\":\"1.3.1\"}"
+      }
+    },
+    "type": "timeSeriesView-v1"
+  },
+  {
+    "uniqueIdentifier": "b5e8150d-6e96-4f08-ab71-a39560d83538",
+    "payload": {
+      "name": "trg_nyctaxi_data_ochestrate",
+      "parentContainer": {
+        "targetUniqueIdentifier": "4d4fb01b-614c-4fd5-91e0-e0e69504fed6"
+      },
+      "definition": {
+        "type": "Rule",
+        "instance": "{\"templateId\":\"EventTrigger\",\"templateVersion\":\"1.3.1\",\"steps\":[{\"name\":\"FieldsDefaultsStep\",\"id\":\"2502ae38-be63-4791-b812-36c64d7b74f4\",\"rows\":[{\"name\":\"EventSelector\",\"kind\":\"Event\",\"arguments\":[{\"kind\":\"EventReference\",\"type\":\"complex\",\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"820df4b5-7a50-4f5b-9d78-a7a3ed79fcb7\"}],\"name\":\"event\"}]}]},{\"name\":\"EventDetectStep\",\"id\":\"5cc6b6c3-2b5d-426a-bdbe-985b7ff2929e\",\"rows\":[{\"name\":\"OnEveryValue\",\"kind\":\"OnEveryValue\",\"arguments\":[]}]},{\"name\":\"ActStep\",\"id\":\"95b871ef-3438-43f3-87b3-2c174d69e9a5\",\"rows\":[{\"name\":\"FabricItemBinding\",\"kind\":\"FabricItemInvocation\",\"arguments\":[{\"name\":\"workspaceId\",\"type\":\"string\",\"value\":\"00000000-0000-0000-0000-000000000000\"},{\"name\":\"itemId\",\"type\":\"string\",\"value\":\"47fdae61-1ab7-b01e-46b3-39f883903fe5\"},{\"name\":\"itemType\",\"type\":\"string\",\"value\":\"Pipeline\"},{\"name\":\"jobType\",\"type\":\"string\",\"value\":\"Pipeline\"},{\"name\":\"fabricJobConnectionDocumentId\",\"type\":\"string\",\"value\":\"9277cb19-830f-4266-82cb-df9434363943\"},{\"name\":\"parameters\",\"type\":\"array\",\"values\":[{\"kind\":\"FabricItemParameter\",\"type\":\"complex\",\"arguments\":[{\"name\":\"parameterName\",\"type\":\"string\",\"value\":\"Type\"},{\"name\":\"parameterValue\",\"type\":\"complexArray\",\"values\":[{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"___type\"}]}]},{\"name\":\"parameterType\",\"type\":\"string\",\"value\":\"String\"}]},{\"kind\":\"FabricItemParameter\",\"type\":\"complex\",\"arguments\":[{\"name\":\"parameterName\",\"type\":\"string\",\"value\":\"Subject\"},{\"name\":\"parameterValue\",\"type\":\"complexArray\",\"values\":[{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"___subject\"}]}]},{\"name\":\"parameterType\",\"type\":\"string\",\"value\":\"String\"}]},{\"kind\":\"FabricItemParameter\",\"type\":\"complex\",\"arguments\":[{\"name\":\"parameterName\",\"type\":\"string\",\"value\":\"Source\"},{\"name\":\"parameterValue\",\"type\":\"complexArray\",\"values\":[{\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"___source\"}]}]},{\"name\":\"parameterType\",\"type\":\"string\",\"value\":\"String\"}]}]},{\"name\":\"additionalInformation\",\"type\":\"array\",\"values\":[]}]}]}]}",
+        "settings": {
+          "shouldRun": true,
+          "shouldApplyRuleOnUpdate": false
+        }
+      }
+    },
+    "type": "timeSeriesView-v1"
+  }
+]
