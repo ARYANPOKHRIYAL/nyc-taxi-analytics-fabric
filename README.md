@@ -233,3 +233,29 @@ The complete execution sequence is:
 **Pipeline Execution History**
 
 ![Pipeline Execution History](docs/screenshots/05-monitoring/02-monitor-pipelun-run-history.png)
+
+
+## SQL Implementation
+
+T-SQL is used to manage staging data, create Warehouse tables, and maintain pipeline execution metadata.
+
+### Table Creation
+
+| SQL Script | Purpose |
+|---|---|
+| [create-presentation-table]() | Creates the presentation table |
+| [create-processing-log-table]() | Creates the metadata processing log |
+
+### Stored Procedures
+
+| Stored Procedure | Purpose |
+|---|---|
+| [data-cleaning-staging](sql/data-cleaning/data_cleaning_staging.sql) | Removes records outside the processing date range in the staging table |
+| [insert-staging-metadata]() | Inserts staging execution metadata |
+| [insert-presentation-metadata]() | Inserts presentation execution metadata |
+
+### Pre-copy Script
+
+[pre-copy-getLatestProcessedPickup]()
+
+Retrieves the latest processed pickup datetime from the metadata processing log to support dynamic monthly ingestion.
