@@ -1,5 +1,6 @@
 
 # End-to-end NYC Taxi Trip Data Pipeline | Microsoft Fabric
+![project-title-thumbnail](docs/screenshots/project-title-thumbnail.png)
 
 An end-to-end data engineering project built using Microsoft Fabric to automate the ingestion, transformation, and presentation of NYC Yellow Taxi trip data.
 
