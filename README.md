@@ -243,19 +243,19 @@ T-SQL is used to manage staging data, create Warehouse tables, and maintain pipe
 
 | SQL Script | Purpose |
 |---|---|
-| [create-presentation-table]() | Creates the presentation table |
-| [create-processing-log-table]() | Creates the metadata processing log |
+| [create-presentation-table](sql/table-creation/create-presentation-table.sql) | Creates the presentation table |
+| [create-processing-log-table](sql/metadata-logging/01-create-processing-log-table.sql) | Creates the metadata processing log |
 
 ### Stored Procedures
 
 | Stored Procedure | Purpose |
 |---|---|
 | [data-cleaning-staging](sql/data-cleaning/data_cleaning_staging.sql) | Removes records outside the processing date range in the staging table |
-| [insert-staging-metadata]() | Inserts staging execution metadata |
-| [insert-presentation-metadata]() | Inserts presentation execution metadata |
+| [insert-staging-metadata](sql/metadata-logging/02-insert-staging-metadata.sql) | Inserts staging execution metadata |
+| [insert-presentation-metadata](sql/metadata-logging/03-insert-presentation-metadata.sql) | Inserts presentation execution metadata |
 
 ### Pre-copy Script
 
-[pre-copy-getLatestProcessedPickup]()
+[pre-copy-getLatestProcessedPickup](sql/metadata-logging/04-pre-copy-getLatestProcessedPickup.sql)
 
 Retrieves the latest processed pickup datetime from the metadata processing log to support dynamic monthly ingestion.
