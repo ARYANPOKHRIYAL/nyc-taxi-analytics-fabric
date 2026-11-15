@@ -30,3 +30,19 @@ The solution uses Microsoft Fabric Data Factory, Dataflow Gen2, and Fabric Wareh
 | Fabric Warehouse | Structured data storage |
 | T-SQL | SQL transformations and stored procedures |
 | GitHub | Source control and project documentation |
+
+
+---
+
+## Solution Architecture
+
+The project follows a layered data engineering architecture in Microsoft Fabric, consisting of data ingestion, transformation, and presentation layers, coordinated through a master orchestration pipeline.
+
+![NYC Taxi Analytics Architecture](docs/architecture/overall-architecture.png)
+
+### Architecture Components
+
+1. **Ingestion Layer:** Loads monthly NYC Yellow Taxi Parquet files from OneLake into the Warehouse staging table.
+2. **Transformation Layer:** Uses Dataflow Gen2 to clean trip data and enrich pickup and drop-off locations with borough and zone information.
+3. **Presentation Layer:** Stores the cleaned and enriched data in an analytics-ready Warehouse table.
+4. **Orchestration Layer:** Coordinates staging and presentation pipelines using sequential execution and success dependencies, with scheduled and event-based triggers.
